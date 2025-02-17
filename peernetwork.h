@@ -38,10 +38,10 @@ class PeerNetwork{
     void listen_for_connections();
 
     public:
-    PeerNetwork(char* initialip,char* port, char* username);
+    PeerNetwork(char* port, char* username);
     ~PeerNetwork();
 
-    void join_network();
+    void join_network(char* ip, char* port);
     void remove_client_from_network(int socket);
 
     Chat Chat;

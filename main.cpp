@@ -30,17 +30,32 @@ int main(){
     char ip[16];
     char port[6];
     char username[64];
-    std::cout << "Input IP to connect to:\n\r";
-    std::cin >> ip;
+    char selection = '\0';
+    std::cout << "Want to start as server or connect to network?\n\r";
+    while(!(selection == '1' || selection== '2')){
+        std::cout << "(1) Start as server (2) Start as client\n\r";
+        std::cin >> selection;
+    }
+
     std::cout << "Input port of server:\n\r";
     std::cin >> port;
     std::cout << "Input username:\n\r";
-    std::cin >> username;
+    std::cin >> username;    
 
     std::cout << "Setting up network\n\r";
-    PeerNetwork network = PeerNetwork(ip,port,username);
+    PeerNetwork network = PeerNetwork(port,username);
+
+    if(selection=='2'){
+        std::cout << "Input IP of network to join:\n\r";
+        std::cin >> ip;   
+        //Make initial connection
+        network.join_network(ip,port);
+
+    }
 
     network.start_listening();
+
+    
 
     while(1){
         //network.listClients();

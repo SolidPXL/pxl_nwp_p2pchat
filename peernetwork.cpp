@@ -1,6 +1,6 @@
 #include "peernetwork.h"
 
-PeerNetwork::PeerNetwork(char* initialip,char* port,char* username){
+PeerNetwork::PeerNetwork(char* port,char* username){
     //Setup other variables
     this->username = username;
     strcpy(this->port,port);
@@ -10,11 +10,11 @@ PeerNetwork::PeerNetwork(char* initialip,char* port,char* username){
     //Step 1.1
 	struct addrinfo internet_address_setup;
 	struct addrinfo * internet_address_result;
-	memset( &internet_address_setup, 0, sizeof internet_address_setup );
+	memset( &internet_address_setup, 0, sizeof(internet_address_setup) );
 	internet_address_setup.ai_family = AF_INET;
 	internet_address_setup.ai_socktype = SOCK_STREAM;
 	internet_address_setup.ai_flags = AI_PASSIVE;
-	int getaddrinfo_return = getaddrinfo( NULL, "24024", &internet_address_setup, &internet_address_result );
+	int getaddrinfo_return = getaddrinfo( NULL, port, &internet_address_setup, &internet_address_result );
 	if( getaddrinfo_return != 0 )
 	{
 		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror( getaddrinfo_return ) );
@@ -76,6 +76,110 @@ PeerNetwork::PeerNetwork(char* initialip,char* port,char* username){
 PeerNetwork::~PeerNetwork(){
     this->stop_listening();
     //Clean up clients
+
+}
+
+void PeerNetwork::join_network(char* ip, char* port){
+	//Step 1.1
+	struct addrinfo internet_address_setup;
+	struct addrinfo * internet_address_result;
+	memset( &internet_address_setup, 0, sizeof(internet_address_setup) );
+	internet_address_setup.ai_family = AF_INET;
+	internet_address_setup.ai_socktype = SOCK_STREAM;
+	std::cout << "connecting tp ip: "<< ip << " usin port: "<< port <<"\n";
+	int getaddrinfo_return = getaddrinfo( ip, port, &internet_address_setup, &internet_address_result );
+	if( getaddrinfo_return != 0 )
+	{
+		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror( getaddrinfo_return ) );
+		exit( 1 );
+	}
+
+	int internet_socket = -1;
+	struct addrinfo * internet_address_result_iterator = internet_address_result;
+	while( internet_address_result_iterator != NULL )
+	{
+		//Step 1.2
+		internet_socket = socket( internet_address_result_iterator->ai_family, internet_address_result_iterator->ai_socktype, internet_address_result_iterator->ai_protocol );
+		if( internet_socket == -1 )
+		{
+			perror( "socket" );
+		}
+		else
+		{
+			//Step 1.3
+			int connect_return = connect( internet_socket, internet_address_result_iterator->ai_addr, internet_address_result_iterator->ai_addrlen );
+			if( connect_return == -1 )
+			{
+				perror( "connect" );
+				closesocket( internet_socket );
+			}
+			else
+			{
+				break;
+			}
+		}
+		internet_address_result_iterator = internet_address_result_iterator->ai_next;
+	}
+
+	freeaddrinfo( internet_address_result );
+
+	if( internet_socket == -1 )
+	{
+		fprintf( stderr, "socket: no valid socket address found\n" );
+		exit( 2 );
+	}
+
+	//Wait to receive their iplist
+	std::cout << "Made connection with client on socket: "<< internet_socket << "\n";
+
+	int timeout = 1000;
+	setsockopt(internet_socket,SOL_SOCKET,SO_RCVTIMEO,(char*)&timeout,sizeof(timeout));
+	int number_of_bytes_received = 0;
+	char ipList[256];
+	memset(ipList,'\0',sizeof(ipList));
+	number_of_bytes_received = recv( internet_socket, ipList, ( sizeof(ipList) ), 0 );
+	if( number_of_bytes_received == -1 )
+	{
+		closesocket(internet_socket);
+		throw 1;
+	} else if(number_of_bytes_received == 0){
+		closesocket(internet_socket);
+		throw 2;
+	}
+
+	int resettime = 1000;
+	setsockopt(internet_socket,SOL_SOCKET,SO_RCVTIMEO,(char*)&resettime,sizeof(resettime));
+
+	//Add socket to list of clients if they provide a valid iplist
+	std::string ipstring = ip;
+	PeerClient client = PeerClient(ipstring,internet_socket);
+
+	this->clients.push_back(client);
+
+
+	//Check if IP is already connected to, if not recursive call
+	int i=0;
+	while(ipList[i]!=0&&i<=256){
+		//convert to string
+		struct in_addr addr;
+    	addr.s_addr = htonl(ipList[i]); // Ensure network byte order
+		std::string convip = inet_ntoa(addr);
+
+		//Check if ip is is client list
+		int client_in_list = 0;
+		for(int j=0;j<this->clients.size();j++){
+			if(this->clients[i].getIp()==convip){
+				client_in_list = 1;
+				break;
+			}
+		}
+		if(client_in_list == 0){
+			this->join_network((char*)(convip.c_str()),port);
+		}
+
+		i++;
+	}
+
 
 }
 
