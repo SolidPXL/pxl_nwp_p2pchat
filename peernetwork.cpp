@@ -91,6 +91,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 	if( getaddrinfo_return != 0 )
 	{
 		fprintf( stderr, "getaddrinfo: %s\n", gai_strerror( getaddrinfo_return ) );
+		throw 3;
 		exit( 1 );
 	}
 
@@ -102,6 +103,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 		internet_socket = socket( internet_address_result_iterator->ai_family, internet_address_result_iterator->ai_socktype, internet_address_result_iterator->ai_protocol );
 		if( internet_socket == -1 )
 		{
+			throw 4;
 			perror( "socket" );
 		}
 		else
@@ -110,6 +112,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 			int connect_return = connect( internet_socket, internet_address_result_iterator->ai_addr, internet_address_result_iterator->ai_addrlen );
 			if( connect_return == -1 )
 			{
+				throw 5;
 				perror( "connect" );
 				closesocket( internet_socket );
 			}
@@ -135,14 +138,18 @@ void PeerNetwork::join_network(char* ip, char* port){
 	int timeout = 1000;
 	setsockopt(internet_socket,SOL_SOCKET,SO_RCVTIMEO,(char*)&timeout,sizeof(timeout));
 	int number_of_bytes_received = 0;
-	char ipList[256];
+	uint32_t ipList[256];
 	memset(ipList,'\0',sizeof(ipList));
-	number_of_bytes_received = recv( internet_socket, ipList, ( sizeof(ipList) ), 0 );
+	number_of_bytes_received = recv( internet_socket, (char*)ipList, sizeof(ipList), 0 );
+
 	if( number_of_bytes_received == -1 )
 	{
+		std::cout << "Dat in buf[0]: " << ipList[0] << "\n";
+		std::cout << "Error on socket: " << WSAGetLastError() << "\n";
 		closesocket(internet_socket);
 		throw 1;
 	} else if(number_of_bytes_received == 0){
+		std::cout << "No ip list received";
 		closesocket(internet_socket);
 		throw 2;
 	}
@@ -156,13 +163,15 @@ void PeerNetwork::join_network(char* ip, char* port){
 
 	this->clients.push_back(client);
 
+	std::cout << "First ip received:" << ipList[0] << "\n";
 
 	//Check if IP is already connected to, if not recursive call
 	int i=0;
 	while(ipList[i]!=0&&i<=256){
 		//convert to string
 		struct in_addr addr;
-    	addr.s_addr = htonl(ipList[i]); // Ensure network byte order
+    	//addr.s_addr = htonl(ipList[i]); // Ensure network byte order
+		addr.s_addr = ipList[i]; // Ensure network byte order
 		std::string convip = inet_ntoa(addr);
 
 		//Check if ip is is client list
@@ -174,7 +183,13 @@ void PeerNetwork::join_network(char* ip, char* port){
 			}
 		}
 		if(client_in_list == 0){
-			this->join_network((char*)(convip.c_str()),port);
+			try{
+				this->join_network((char*)(convip.c_str()),port);
+			} catch(int err){
+				closesocket(internet_socket);
+				throw 3;
+			}
+			
 		}
 
 		i++;
