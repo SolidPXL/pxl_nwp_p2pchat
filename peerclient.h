@@ -4,6 +4,7 @@
 #include <string>
 #include <winsock.h>
 #include "message.h"
+#include "stdint.h"
 
 class PeerClient{
     private:
@@ -17,6 +18,7 @@ class PeerClient{
 
     inline int getSocket(){return this->client_socket;};
     inline std::string getIp(){return this->ip;};
+    inline uint32_t getIpInt(){return inet_addr(this->ip.c_str());};
 
     void send_message(struct MessageToSend msg);
     //Polls the receive buffer but non blocking.

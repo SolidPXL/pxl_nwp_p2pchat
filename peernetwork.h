@@ -58,6 +58,8 @@ class PeerNetwork{
     void broadcast_message(std::string_view message);
 
     std::string get_client_ip_list();
+    //Return size in bytes of the filled data
+    int get_client_ip_list_int(uint32_t* buf, int size);
 
 
 };

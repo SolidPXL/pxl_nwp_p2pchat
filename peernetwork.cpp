@@ -223,10 +223,14 @@ void PeerNetwork::listen_for_connections(){
         PeerClient client = PeerClient(ip,client_socket);
 
 		//Send client list
-		std::string clientList = this->get_client_ip_list();
-		clientList = clientList + client.getIp();
+		uint32_t ipbuffer[254];
+		int bytes_to_send = this->get_client_ip_list_int(ipbuffer,254);
 
-		send(client_socket,clientList.c_str(),clientList.length(),0);
+		// std::string clientList = this->get_client_ip_list();
+		// clientList = clientList + client.getIp();
+
+		//send(client_socket,clientList.c_str(),clientList.length(),0);
+		send(client_socket,(char*)ipbuffer,bytes_to_send,0);
 
         //Add client to list
         this->clients.emplace_back(client);
@@ -327,4 +331,11 @@ std::string PeerNetwork::get_client_ip_list(){
 		list = list + this->clients[i].getIp() + '\n';
 	}
 	return list;
+}
+
+int PeerNetwork::get_client_ip_list_int(uint32_t* buf, int size){
+	for(int i=0;(i<this->clients.size()) && (i*4<size);i++){
+		buf[i] = this->clients[i].getIpInt();
+	}
+	return this->clients.size()*4;
 }
