@@ -144,10 +144,9 @@ void PeerNetwork::join_network(char* ip, char* port){
 
 	if( number_of_bytes_received == -1 )
 	{
-		std::cout << "Dat in buf[0]: " << ipList[0] << "\n";
-		std::cout << "Error on socket: " << WSAGetLastError() << "\n";
-		closesocket(internet_socket);
-		throw 1;
+		//Connection timed out, no iplist received
+
+		//TODO add check to see if it is worth to stay connected to the user
 	} else if(number_of_bytes_received == 0){
 		std::cout << "No ip list received";
 		closesocket(internet_socket);
