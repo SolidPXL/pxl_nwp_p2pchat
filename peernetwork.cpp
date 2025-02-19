@@ -193,6 +193,7 @@ void PeerNetwork::remove_client_from_network(int socket){
 			this->clients.erase(it+i);
 		}
 	}
+	this->connectionMutex.unlock();
 }
 
 void PeerNetwork::listen_for_connections(){
@@ -279,7 +280,6 @@ void PeerNetwork::poll_clients(){
 
 
 		timeval timeout = {0, 100000};  // 100ms timeout
-
 
 		int result = select(0, &readSet, NULL, NULL, &timeout);
 
