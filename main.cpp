@@ -40,7 +40,7 @@ int main() {
         std::string msg;
         std::getline(std::cin, msg);
         network.broadcast_message(msg);
-        usleep(500000); // Linux sleep (in seconds)
+        usleep(50000); // Linux sleep (in seconds)
     }
 
 

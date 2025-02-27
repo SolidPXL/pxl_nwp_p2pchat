@@ -217,7 +217,7 @@ void PeerNetwork::listen_for_connections(){
 		std::cout << "Waiting for client connections\n";
         int client_socket = accept(this->listenSocket, (sockaddr*)&client_internet_address, &client_internet_address_length);
 		std::cout << "Accepted a client\n";
-		usleep(500000);
+		usleep(5000);
 
         if (client_socket <= 0) {
             if (!this->running) break;  // Exit loop if stopping
@@ -300,12 +300,17 @@ void PeerNetwork::poll_clients(){
 			fdlist.push_back(this->clients[i].getSocket());
 			FD_SET(this->clients[i].getSocket(), &readSet);
 		}
+		int max_fd = 0;
+		for (int fd : fdlist) {
+    		if (fd > max_fd) max_fd = fd;
+		}
+
 		this->connectionMutex.unlock();
 
 
 		timeval timeout = {0, 100000};  // 100ms timeout
 
-		int result = select(0, &readSet, NULL, NULL, &timeout);
+		int result = select(max_fd, &readSet, NULL, NULL, &timeout);
 
 		if (result > 0) {
 			for(int i=0;i<fdlist.size();i++){
