@@ -3,6 +3,7 @@
 
 #include <string>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include "message.h"
 #include "stdint.h"
 
