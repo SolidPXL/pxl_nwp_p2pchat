@@ -290,32 +290,40 @@ void PeerNetwork::debugPrint(){
 void PeerNetwork::poll_clients(){
 	while(running){
 		//Create set
+		std::cout << "Creating lock\n";
 		this->connectionMutex.lock();
+		std::cout << "Lock aquired\n";
 		std::vector<int> fdlist;
 		fd_set readSet;
 		FD_ZERO(&readSet);
+		std::cout << "zeroed set\n";
 		//Loop over each item
 		for(int i=0;i<this->clients.size();i++){
 			//Check if socket received a message
 			fdlist.push_back(this->clients[i].getSocket());
 			FD_SET(this->clients[i].getSocket(), &readSet);
 		}
+		std::cout << "Added all sockets as fds to both fdlist and vector\n";
 		int max_fd = 0;
 		for (int fd : fdlist) {
     		if (fd > max_fd) max_fd = fd;
 		}
+		std::cout << "Got max fdlist\n";
 
 		this->connectionMutex.unlock();
+		std::cout << "Unlocked mutex\n";
 
 
 		timeval timeout = {0, 100000};  // 100ms timeout
 
 		int result = select(max_fd, &readSet, NULL, NULL, &timeout);
+		std::cout << "got select\n";
 
 		if (result > 0) {
 			for(int i=0;i<fdlist.size();i++){
 				if(FD_ISSET(fdlist[i],&readSet)){
 					//Socket is readable
+					std::cout << "Socket is readable\n";
 					char buffer[1024];
 					memset(buffer,'\0',1024);
 					int bytesReceived = recv(fdlist[i], buffer, sizeof(buffer), 0);
@@ -332,8 +340,10 @@ void PeerNetwork::poll_clients(){
 			}
 		} else if (result == 0) {
 			// Timeout occurred
+			std::cout << "Timout occured\n";
 		} else {
 			// Error, most likely no clients are connected
+			std::cout << "Other value\n";
 		}
 	}
 	
