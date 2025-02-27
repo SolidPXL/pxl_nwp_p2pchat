@@ -314,8 +314,8 @@ void PeerNetwork::poll_clients(){
 						FD_CLR(fdlist[i], &readSet);
 					} else {
 						// Process received data...
-						struct Message message = this->Chat.processMessage(buffer,1024);
-						this->Chat.addMessage(message);
+						struct Message message = this->ChatInstance.processMessage(buffer,1024);
+						this->ChatInstance.addMessage(message);
 					}
 				}
 			}
@@ -332,7 +332,7 @@ void PeerNetwork::broadcast_message(std::string_view message){
 	struct Message readmsg;
 	readmsg.message = message;
 	strcpy(readmsg.username,this->username.c_str());
-	struct MessageToSend msg = this->Chat.prepareMessage(readmsg);
+	struct MessageToSend msg = this->ChatInstance.prepareMessage(readmsg);
 
 	for(int i=0;i<this->clients.size();i++){
 		this->clients[i].send_message(msg);
