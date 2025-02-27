@@ -304,17 +304,23 @@ void PeerNetwork::poll_clients(){
 			FD_SET(this->clients[i].getSocket(), &readSet);
 		}
 		std::cout << "Added all sockets as fds to both fdlist and vector\n";
+		for(int i=0;i<this->clients.size();i++){
+			//Check if socket received a message
+			std::cout << fdlist[i]; << "Was added to the list\n";
+		}
+		
 		int max_fd = 0;
 		for (int fd : fdlist) {
     		if (fd > max_fd) max_fd = fd;
 		}
 		std::cout << "Got max fdlist\n";
+		std::cout << "Max FD: " << max_fd << std::endl;
 
 		this->connectionMutex.unlock();
 		std::cout << "Unlocked mutex\n";
 
 
-		timeval timeout = {0, 100000};  // 100ms timeout
+		timeval timeout = {0, 500000};  // 100ms timeout
 
 		int result = select(max_fd, &readSet, NULL, NULL, &timeout);
 		std::cout << "got select\n";
@@ -341,6 +347,7 @@ void PeerNetwork::poll_clients(){
 		} else if (result == 0) {
 			// Timeout occurred
 			std::cout << "Timout occured\n";
+			std::cout << strerror(errno) << "\n";
 		} else {
 			// Error, most likely no clients are connected
 			std::cout << "Other value\n";
