@@ -1,6 +1,6 @@
 CC = g++
 CFLAGS = -Wall -Wextra -std=c++17
-LDFLAGS = -lws2_32
+LDFLAGS = 
 SRC = $(wildcard *.cpp)
 OBJ = $(filter-out main.o, $(SRC:.cpp=.o))
 TARGET = app.exe
