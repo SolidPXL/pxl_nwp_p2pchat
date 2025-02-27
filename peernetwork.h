@@ -52,7 +52,7 @@ class PeerNetwork{
     void join_network(char* ip, char* port);
     void remove_client_from_network(int socket);
 
-    Chat Chat;
+    Chat ChatInstance;
     
     void start_listening();
     void stop_listening();
