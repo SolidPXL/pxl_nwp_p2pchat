@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include "message.h"
 #include "stdint.h"
+#include <errno.h>
 
 class PeerClient{
     private:

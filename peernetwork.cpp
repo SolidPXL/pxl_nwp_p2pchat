@@ -308,7 +308,7 @@ void PeerNetwork::poll_clients(){
 					char buffer[1024];
 					memset(buffer,'\0',1024);
 					int bytesReceived = recv(fdlist[i], buffer, sizeof(buffer), 0);
-					if (bytesReceived == 0 || (bytesReceived == SOCKET_ERROR && WSAGetLastError() == WSAECONNRESET)) {
+					if (bytesReceived == 0 || (bytesReceived == -1 && errno == ECONNRESET)) {
 						// Connection closed, remove from the set
 						this->remove_client_from_network(fdlist[i]);
 						FD_CLR(fdlist[i], &readSet);
