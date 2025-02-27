@@ -40,7 +40,7 @@ PeerNetwork::PeerNetwork(char* port,char* username){
 			if( bind_return == -1 )
 			{
 				std::cout << "Error in binding server";
-				closesocket( internet_socket );
+				close( internet_socket );
                 throw 3;
 			}
 			else
@@ -50,7 +50,7 @@ PeerNetwork::PeerNetwork(char* port,char* username){
 				if( listen_return == -1 )
 				{
 					std::cout << "Error in setting socket to listen";
-					closesocket( internet_socket );
+					close( internet_socket );
 					throw 4;
 				}
 				else
@@ -114,7 +114,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 			{
 				throw 5;
 				perror( "connect" );
-				closesocket( internet_socket );
+				close( internet_socket );
 			}
 			else
 			{
@@ -149,7 +149,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 		//TODO add check to see if it is worth to stay connected to the user
 	} else if(number_of_bytes_received == 0){
 		std::cout << "No ip list received";
-		closesocket(internet_socket);
+		close(internet_socket);
 		throw 2;
 	}
 
@@ -185,7 +185,7 @@ void PeerNetwork::join_network(char* ip, char* port){
 			try{
 				this->join_network((char*)(convip.c_str()),port);
 			} catch(int err){
-				closesocket(internet_socket);
+				close(internet_socket);
 				throw 3;
 			}
 			
@@ -203,7 +203,7 @@ void PeerNetwork::remove_client_from_network(int socket){
 	auto it = this->clients.begin();
 	for(int i=0;i<this->clients.size();i++){
 		if(this->clients[i].getSocket()==socket){
-			closesocket(this->clients[i].getSocket());
+			close(this->clients[i].getSocket());
 			this->clients.erase(it+i);
 		}
 	}
@@ -216,11 +216,11 @@ void PeerNetwork::listen_for_connections(){
         socklen_t client_internet_address_length = sizeof(client_internet_address);
         int client_socket = accept(this->listenSocket, (sockaddr*)&client_internet_address, &client_internet_address_length);
 
-		Sleep(500);
+		usleep(500000);
 
         if (client_socket <= 0) {
             if (!this->running) break;  // Exit loop if stopping
-            //closesocket(this->listenSocket);
+            //close(this->listenSocket);
             continue;
         }
 

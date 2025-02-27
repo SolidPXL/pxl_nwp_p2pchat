@@ -9,14 +9,21 @@
 #include <mutex>
 #include <atomic>
 #include <iostream>
-#include <winsock2.h> //for all socket programming
-#include <ws2tcpip.h> //for getaddrinfo, inet_pton, inet_ntop
 #include <stdio.h> //for fprintf, perror
 #include <stdlib.h> //for exit
 #include <string.h> //for memset
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <cstring>
+#include <cstdio>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
 
 class PeerNetwork{
 

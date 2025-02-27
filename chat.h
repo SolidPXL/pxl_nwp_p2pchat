@@ -6,7 +6,9 @@
 #include <iostream>
 #include <cstring>
 #include <stdlib.h>
-#include <time.h>
+#include <random>
+#include <cstring>
+#include <iostream>
 
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */

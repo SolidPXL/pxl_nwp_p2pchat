@@ -2,7 +2,7 @@
 #define PEERCLIENT_H
 
 #include <string>
-#include <winsock.h>
+#include <sys/socket.h>
 #include "message.h"
 #include "stdint.h"
 
