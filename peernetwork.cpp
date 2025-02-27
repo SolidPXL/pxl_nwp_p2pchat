@@ -254,7 +254,7 @@ void PeerNetwork::listen_for_connections(){
 void PeerNetwork::start_listening(){
     this->running = true;
     listenerThread = std::thread(&PeerNetwork::listen_for_connections,this);
-	clientThread = std::thread(PeerNetwork::poll_clients,this);
+	clientThread = std::thread(&PeerNetwork::poll_clients,this);
 }
 
 void PeerNetwork::stop_listening(){
