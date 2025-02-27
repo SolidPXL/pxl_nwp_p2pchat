@@ -214,8 +214,9 @@ void PeerNetwork::listen_for_connections(){
     while (running) {
         struct sockaddr_storage client_internet_address;
         socklen_t client_internet_address_length = sizeof(client_internet_address);
+		std::cout << "Waiting for client connections\n";
         int client_socket = accept(this->listenSocket, (sockaddr*)&client_internet_address, &client_internet_address_length);
-
+		std::cout << "Accepted a client\n";
 		usleep(500000);
 
         if (client_socket <= 0) {
@@ -223,31 +224,36 @@ void PeerNetwork::listen_for_connections(){
             //close(this->listenSocket);
             continue;
         }
-
+		std::cout << "Aquiring lock\n";
         std::lock_guard<std::mutex> lock(connectionMutex);
 
 		
 
         //Get inet string from new connection
+		std::cout << "Lock aquired\n";
 		struct sockaddr_in *addr4 = (sockaddr_in*)&client_internet_address;
 		char stringip[16];
         inet_ntop(AF_INET, &(addr4->sin_addr),stringip,16);
 		std::string ip(stringip);
+		std::cout << "Stringified new client " << ip << "\n";
 
         PeerClient client = PeerClient(ip,client_socket);
+		std::cout << "Created new client\n";
 
 		//Send client list
 		uint32_t ipbuffer[254];
 		int bytes_to_send = this->get_client_ip_list_int(ipbuffer,254);
-
-		// std::string clientList = this->get_client_ip_list();
-		// clientList = clientList + client.getIp();
+		std::cout << "sending ips\n";
+		std::cout << " ipbuffer[0] " << ipbuffer[0] << " ipbuffer[1] " << ipbuffer[1] << " ipbuffer[2] " << ipbuffer[2] << " ipbuffer[3] " << ipbuffer[3] << "\n";
 
 		//send(client_socket,clientList.c_str(),clientList.length(),0);
 		send(client_socket,(char*)ipbuffer,bytes_to_send,0);
+		std::cout << "sent ips\n";
 
         //Add client to list
         this->clients.emplace_back(client);
+		std::cout << "adding client to list, new list\n";
+		this->listClients();
     }
 }
 
